@@ -1,2 +1,2 @@
-Power_Calculation
+PowerCalculation
 https://www.hackerrank.com/challenges/power-calculation/

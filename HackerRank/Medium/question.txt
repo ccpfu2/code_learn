@@ -1,5 +1,5 @@
-Climbing_the_Leaderboard
+ClimbingTheLeaderboard
 https://www.hackerrank.com/challenges/climbing-the-leaderboard/
 
-Magic_Square:
+MagicSquare:
 https://www.hackerrank.com/challenges/magic-square-forming/
