@@ -1,0 +1,103 @@
+1. 
+    Prove (a**n) % 100 = (a%100)**n
+
+    To understand this by using:
+    a = (b*100 + c)
+    a**n = (b*100 + c)**n
+
+    With Polynomial_expansion:
+    https://en.wikipedia.org/wiki/Polynomial_expansion
+
+    (b*100 + c)**n = n*100*b*(c**(n-1)) + c**n
+
+    n*100*b*(c**(n-1)) % 100 = 0
+    Therefore, (a**n) % 100 = (a%100)**n
+
+2.
+    Do a**n in O(log(n)/log(2)) or O(log_2(n)) 
+
+    At the begining of learning programing, the understand of a**n is:
+
+    for i in range(n):
+        a *= a
+
+    And this is a O(n) method
+
+    To do it in O(log_2(n)),
+    for understanding:
+        1st take n in bit form
+            e.g.: n = 10 = b'1010
+        2nd understand exponents
+            https://en.wikipedia.org/wiki/Exponentiation
+            e.g. a**n = (a**(n-m)) * (a**m)
+            e.g. a**10 = (a**8) * (a**2)
+        3rd boost the process by only calculate a**(2**floor(log_2(n)))
+            i.e. a**2, a**4, a**8, a**16,...
+            if you understand the meaning of bit form,
+            you will know that the result should be multiply all the 1's bit with the correspondent 
+            e.g. a**22 = (a**16) * (a**4) * (a**2)
+
+    code:
+    def pow(a,n):
+        rtn = 1
+        if n > 0: 
+            for i in range(int(log(n)/log(2))+1):
+                if n % 2 == 1:
+                    rtn *= a
+                n = n>>1
+                a *= a
+        else:
+            # Should handle the negative value of power
+            # Just don't do it now since this is not in purpose
+            pass
+        return rtn
+
+3. 
+    Depend on the memory we can use and the size of the modulo (https://en.wikipedia.org/wiki/Modulo_operation)
+    We can do it with a mapping table for the power.
+    As the input a%m is finite and the output (a**x)%m is recurring (Note m is constant)
+
+    Proving (a**x)%m is recurring is easy,
+    since m is constant, if x is greater than m, then the output must repeat the output before.
+    And,
+    if (a**x1)%m = (a**x2)%m,
+    then (a**(x1+1))%m (a**(x2+1))%m
+    e.g. 7%10 = 7**5%10 = 7%10 -> 7**2%10 = 7**6%10 = 9%10
+
+    Then (a**n)%m will be (a%m)**p
+    p will be (term to recurring) + (n-(term to recurring))%(the interval of recurring)
+    e.g. 3%25->9%25->2%25->6%25->18%25->19%25->22%25->16%25->23%25->19%25->22%25->16%25->23%25
+        In this case,
+            term to recurring: 5
+            interval of recurring: 4
+        e.g x = 108 = 5 + 4*25 + 3, a**108 = a**8
+
+    This method has pros and cons
+    pros:
+    - O(m*n) and in this question m is constant, therefore O(n) process for building the table,
+      the table can re-use during the queries, O(m)=O(1) during processing.
+    cons:
+    - The memory use is dynamic, each input has different length of output loop
+    - if n is much small than m, this will be useless
+
+4.
+    Tailor made solution:
+    let a = 10*b+c
+    
+    (a**n)%100 = (n%10)*10*(b%10)*(c**(n-1)) + c**n  (Note: c = a%10)
+
+    See Polynomial_expansion:
+    https://en.wikipedia.org/wiki/Polynomial_expansion
+
+    Using 3. method, the table maximmum will have (c**n%100) -> 10*100=1000 elements(maximmum)
+    Remarks: In 0-9, 0, 1 loop it self and 5 is always 25%100, which means it will much less than the theoretical maximmum.
+             moreover, both (2,4,8), (3,9) can use the same loop. so only need the table for [2,3,5,6,7]
+
+    Sum(a=1,k) (a**n)%100 = Sum(a=1,k) (n%10)*10*(b%10)*(c**(n-1)) + c**n
+    Sum(a=1,k) (a**n)%100 = Sum(d=1,k%10) ((n%10)*(Sum(b=0,k//10+1) b%10)*(c**(n-1))*10 + (k//10+1)*d**n) +
+                            Sum(d=k%10,9) ((n%10)*(Sum(b=0,k//10)b%10)*(c**(n-1))*10 + k//10*d**n)
+                          = Sum(d=0,k%10) ((n%10)*(((k//10+1)%10)*((k//10+2)%10)//2)*(d**(n-1))*10 + (k//10+1)*d**n) +
+                            Sum(d=k%10,9) ((n%10)*(((k//10)*(k//10+1)//2)%10)*(d**(n-1))*10 + k//10*d**n)
+
+    The function only loop for 10 times, and complete 1 query
+    However, if it increase the m from 100 to 1000, this method will not sustainable
